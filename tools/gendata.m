@@ -1,0 +1,23 @@
+nPos = 1000;
+nNeg = 1000;
+y1=ones(nPos,1);
+y2=-ones(nNeg,1);
+x1 = mvnrnd([1,1],[0.2,0;0,2],nPos);
+x2 = mvnrnd([-1,-1],[0.2,0;0,2],nNeg);
+label = [y1;y2];
+train = [x1;x2];
+figure;
+plot(x1(:,1),x1(:,2),'r+',x2(:,1),x2(:,2),'bo');
+save('mydata.mat','label','train');
+
+nPos = 500;
+nNeg = 500;
+y1=ones(nPos,1);
+y2=-ones(nNeg,1);
+x1 = mvnrnd([1,1],[0.2,0;0,2],nPos);
+x2 = mvnrnd([-1,-1],[0.2,0;0,2],nNeg);
+L = [y1;y2];
+test = [x1;x2];
+figure;
+plot(x1(:,1),x1(:,2),'r+',x2(:,1),x2(:,2),'bo');
+save('mydatafortest.mat','L','test');
