@@ -1,4 +1,5 @@
-dataset='w7a';
+function [OptCM] = SCW(dataset)
+fprintf('*********SCW Begin*********\n');
 [label,train] = readdata(dataset,'train');
 N=size(train,1);train = [train,ones(N,1)];
 [N,d] = size(train);
@@ -8,6 +9,10 @@ M=size(test,1);test = [test,ones(M,1)];
 [M,~] = size(test);
 
 eta = 0.95;
+
+OptCM = zeros(2,2);
+maxCorrect=0;
+
 for c=-4:4
 C=10^c;
 correct = 0;CM = zeros(2,2);
@@ -35,6 +40,10 @@ for t=1:N
 	if(ey==yt)
 		correct=correct+1;
 	end
+	if(correct>maxCorrect)
+		maxCorrect = correct;
+		OptCM = CM;
+	end
 end
 fprintf('Train. %d/%d\n',correct,N);
 fprintf(' tp:%.4f, fn:%.4f, fp:%.4f, tn:%.4f\n',CM(1,1)/sum(label==1),CM(1,2)/sum(label==1),CM(2,1)/sum(label==-1),CM(2,2)/sum(label==-1) );
@@ -51,4 +60,8 @@ for t = 1:M
 end
 fprintf('Test. %d/%d\n',correct,M);
 fprintf(' tp:%.4f, fn:%.4f, fp:%.4f, tn:%.4f\n',CM(1,1)/sum(L==1),CM(1,2)/sum(L==1),CM(2,1)/sum(L==-1),CM(2,2)/sum(L==-1) );
+end
+OptCM(1,:)=OptCM(1,:)./sum(L==1);
+OptCM(2,:)=OptCM(2,:)./sum(L==-1);
+fprintf('*********SCW End*********\n');
 end

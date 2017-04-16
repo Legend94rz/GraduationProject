@@ -1,4 +1,5 @@
-dataset='w7a';
+function [OptCM]=PA(dataset)
+fprintf('*********PA Begin*********\n');
 [label,train] = readdata(dataset,'train');
 N=size(train,1);train = [train,ones(N,1)];
 [N,d] = size(train);
@@ -6,6 +7,10 @@ N=size(train,1);train = [train,ones(N,1)];
 [L,test] = readdata(dataset,'test');
 M=size(test,1);test = [test,ones(M,1)];
 [M,~] = size(test);
+
+OptCM = zeros(2,2);
+maxCorrect=0;
+
 for C=[0.0001,0.001,0.01,0.1,1,10,100,1000,10000]
 fprintf('======C: %d==========\n',C);
 %C = 0.001;
@@ -41,7 +46,15 @@ for t=1:M
 	if(ey==yt)
 		correct=correct+1;
 	end
+	if(correct>maxCorrect)
+		maxCorrect = correct;
+		OptCM = CM;
+	end
 end
 fprintf('Test. %d/%d\n',correct,M);
 fprintf(' tp:%.4f, fn:%.4f, fp:%.4f, tn:%.4f\n',CM(1,1)/sum(L==1),CM(1,2)/sum(L==1),CM(2,1)/sum(L==-1),CM(2,2)/sum(L==-1) );
+end
+OptCM(1,:)=OptCM(1,:)./sum(L==1);
+OptCM(2,:)=OptCM(2,:)./sum(L==-1);
+fprintf('*********PA End*********\n');
 end

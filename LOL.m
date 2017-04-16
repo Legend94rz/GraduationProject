@@ -1,4 +1,5 @@
-dataset='w7a';
+function [OptCM] = LOL(dataset)
+fprintf('*********LOL Begin*********\n');
 C=1;
 [label,train] = readdata(dataset,'train');
 k=60;
@@ -8,6 +9,8 @@ N=size(train,1);train = [train,ones(N,1)];
 W = zeros(d,k+1);
 count = zeros(1,k);
 P = zeros(k,d);
+OptCM = zeros(2,2);
+maxCorrect=0;
 for t=1:N
 	xt = train(t,:);
 	i=t;
@@ -50,6 +53,14 @@ for t = 1:M
 	if(ey==yt)
 		correct = correct+1;
 	end
+	if(correct>maxCorrect)
+		maxCorrect = correct;
+		OptCM = CM;
+	end
 end
 fprintf('Test. %d/%d\n',correct,M);
 fprintf(' tp:%.4f, fn:%.4f, fp:%.4f, tn:%.4f\n',CM(1,1)/sum(L==1),CM(1,2)/sum(L==1),CM(2,1)/sum(L==-1),CM(2,2)/sum(L==-1) );
+OptCM(1,:)=OptCM(1,:)./sum(L==1);
+OptCM(2,:)=OptCM(2,:)./sum(L==-1);
+fprintf('*********LOL Begin*********\n');
+end

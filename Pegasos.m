@@ -1,11 +1,15 @@
 % Mini-Batch Iterations without Projection
-dataset='ijcnn';
+function [OptCM]=Pegasos(dataset)
+fprintf('*********Pegasos Begin*********\n');
 [label,train] = readdata(dataset,'train');
 N = size(train,1);train = [train,ones(N,1)];
 [N,d]=size(train);
 
 [L,test] = readdata(dataset,'test');
 M=size(test,1);test = [test,ones(M,1)];
+
+OptCM = zeros(2,2);
+maxCorrect=0;
 
 T = N;		% the number of iteration
 K = 50;		% the norm of the subset of training set. When k==1, the algorithm is a kind of stochastic gradient descent method.
@@ -32,7 +36,15 @@ for t = 1:M
 	if(ey==yt)
 		correct=correct+1;
 	end
+	if(correct>maxCorrect)
+		maxCorrect = correct;
+		OptCM = CM;
+	end
 end
 fprintf('Test. %d/%d\n',correct,M);
 fprintf(' tp:%.4f, fn:%.4f, fp:%.4f, tn:%.4f\n',CM(1,1)/sum(L==1),CM(1,2)/sum(L==1),CM(2,1)/sum(L==-1),CM(2,2)/sum(L==-1) );
+end
+OptCM(1,:)=OptCM(1,:)./sum(L==1);
+OptCM(2,:)=OptCM(2,:)./sum(L==-1);
+fprintf('*********Pegasos End*********\n');
 end

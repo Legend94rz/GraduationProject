@@ -1,4 +1,5 @@
-dataset='svmguide1';
+function [OptCM] =CW(dataset)
+fprintf('*********CW Begin*********\n');
 [label,train] = readdata(dataset,'train');
 N=size(train,1);train = [train,ones(N,1)];
 [N,d] = size(train);
@@ -8,6 +9,10 @@ M=size(test,1);test = [test,ones(M,1)];
 [M,~] = size(test);
 
 a = 0.05;
+
+OptCM = zeros(2,2);
+maxCorrect=0;
+
 %问题：Sigma会出现负数，应该是数据问题。试试把数据缩放到[0,1] <已修正>
 for yita = 0.5:0.05:0.95
 	correct = 0;CM = zeros(2,2);
@@ -46,7 +51,15 @@ for yita = 0.5:0.05:0.95
 		if(ey==yt)
 			correct=correct+1;
 		end
+		if(correct>maxCorrect)
+			maxCorrect = correct;
+			OptCM = CM;
+		end
 	end
 	fprintf('Test. %d/%d\n',correct,M);
 	fprintf(' tp:%.4f, fn:%.4f, fp:%.4f, tn:%.4f\n',CM(1,1)/sum(L==1),CM(1,2)/sum(L==1),CM(2,1)/sum(L==-1),CM(2,2)/sum(L==-1) );
+end
+OptCM(1,:)=OptCM(1,:)./sum(L==1);
+OptCM(2,:)=OptCM(2,:)./sum(L==-1);
+fprintf('*********CW End*********\n');
 end
