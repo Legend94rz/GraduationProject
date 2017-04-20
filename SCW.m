@@ -40,10 +40,6 @@ for t=1:N
 	if(ey==yt)
 		correct=correct+1;
 	end
-	if(correct>maxCorrect)
-		maxCorrect = correct;
-		OptCM = CM;
-	end
 end
 fprintf('Train. %d/%d\n',correct,N);
 fprintf(' tp:%.4f, fn:%.4f, fp:%.4f, tn:%.4f\n',CM(1,1)/sum(label==1),CM(1,2)/sum(label==1),CM(2,1)/sum(label==-1),CM(2,2)/sum(label==-1) );
@@ -56,6 +52,10 @@ for t = 1:M
 	CM(int8(-1==yt)+1,int8(-1==ey)+1) = CM(int8(-1==yt)+1,int8(-1==ey)+1)+1;
 	if(ey==yt)
 		correct=correct+1;
+	end
+	if(correct>maxCorrect)
+		maxCorrect = correct;
+		OptCM = CM;
 	end
 end
 fprintf('Test. %d/%d\n',correct,M);

@@ -1,4 +1,5 @@
-function [OptCM] = BSGD(dataset)
+dataset = 'a7a';
+%function [OptCM] = BSGD(dataset)
 fprintf('*********BSGD Begin*********\n');
 [label,train] = readdata(dataset,'train');
 N=size(train,1);train = [train,ones(N,1)];
@@ -10,54 +11,52 @@ M=size(test,1);test = [test,ones(M,1)];
 
 OptCM = zeros(2,2);
 maxCorrect=0;
-
+%Pegasos learning rate : eta = 1/(lambda*t)
+hash = java.util.Hashtable;
+hash.put('svmguide1',0.01);hash.put('ijcnn1',0.05);hash.put('cbcl',5);hash.put('a7a',0.1);hash.put('w7a',0.2);
 for lambda = [0.0001,0.001,0.01,0.1,1,10,100,1000]
 B=500;
-alpha=zeros(B,1);
-I=zeros(B,1);
-fprintf('lambda: %d\n',lambda);
-%%init
-for i=1:B
-	p = randi([1,N]);
-	I(i) = p;
-	alpha(i) = 1/lambda*label(p);
-end
-w=zeros(B,1);
-for it=1:2*N
+%%init: consider first B samples as Support Vectors
+SV=train(1:B,:);
+I=(1:B)';
+beta =label(1:B).*(1/lambda).*I;
+alpha=beta.*I/B;
+
+fprintf('lambda: %d, Sigma: %d\n',lambda,hash.get(dataset));
+
+for it=B+1:N
 	t = randi([1,N]);
 	xt = train(t,:);yt = label(t);
-	yita = 1/(lambda*t);
-	alpha = (1-yita*lambda)*alpha;
-	beta = 0;
-	w = (1-yita*lambda)*w;
-	Phix = kernel(xt,train(I,:));
-	if(yt*Phix*w<1)
-		beta = yita*yt;
-		w = w + beta * Phix'; %todo kernelize
-		%[~,i] = min(alpha.^2);
-		i=randi([1,B]);
-		w = w - alpha(i) * kernel(train(i,:),train(I,:) )';
-		alpha(i) = beta;  I(i) = t;		
+	margin = yt*kernel(xt,SV,hash.get(dataset))*alpha;
+	if(margin<1)
+		beta_ = 1/(lambda*it)*yt;
+		p=randi([1,B]);
+		I(p) = t;
+		SV(p,:) = xt;
+		beta(p) = beta_;
+		alpha(p) = beta_*t/it;
 	end
 end
 correct=0;
 CM=zeros(2,2);
+PositiveSample = sum(L==1);
+NegtiveSample = sum(L==-1);
 for t = 1:M
 	xt = test(t,:);yt=L(t);
-	ey = sign( kernel(xt,train(I,:))*w );
+	ey = sign( kernel(xt,train(I,:),hash.get(dataset))*alpha );
 	CM(int8(-1==yt)+1,int8(-1==ey)+1) = CM(int8(-1==yt)+1,int8(-1==ey)+1)+1;
 	if(ey==yt)
 		correct=correct+1;
 	end
-	if(correct>maxCorrect)
+	if(correct>maxCorrect && correct~=NegtiveSample && correct ~=PositiveSample)
 		maxCorrect = correct;
 		OptCM = CM;
 	end
 end
 fprintf('Test. %d/%d\n',correct,M);
-fprintf(' tp:%.4f, fn:%.4f, fp:%.4f, tn:%.4f\n',CM(1,1)/sum(L==1),CM(1,2)/sum(L==1),CM(2,1)/sum(L==-1),CM(2,2)/sum(L==-1) );
+fprintf(' tp:%.4f, fn:%.4f, fp:%.4f, tn:%.4f\n',CM(1,1)/PositiveSample,CM(1,2)/PositiveSample,CM(2,1)/NegtiveSample,CM(2,2)/NegtiveSample);
 end
 OptCM(1,:)=OptCM(1,:)./sum(L==1);
 OptCM(2,:)=OptCM(2,:)./sum(L==-1);
 fprintf('*********BSGD End*********\n');
-end
+%end
