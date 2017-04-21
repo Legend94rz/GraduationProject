@@ -1,19 +1,21 @@
-%dataName=char({'svmguide1'});
-%funcName=char({'PA','CW','SCW','LOL','Pegasos'});
-
-dataName=char({'a7a','w7a','svmguide1','ijcnn1','cbcl'});
-funcName=char({'PA','CW','SCW','LOL','Pegasos','BSGD'});
-[dataLength,~] = size(dataName);
-[funcLength,~]=size(funcName);
+Recalc=0;
+dataNames=char({'svmguide1','a7a','w7a','cbcl','ijcnn1'});
+funcNames=char({'PA','CW','SCW','LOL','BSGD','Pegasos'});
+[dataLength,~] = size(dataNames);
+[funcLength,~] = size(funcNames);
 s = load('ALL.mat','ALL');
 if isfield(s,'ALL')==0
 	ALL = [];
 	for i=1:dataLength
-		dataset=strtrim(dataName(i,:));
+		dataset=strtrim(dataNames(i,:));
 		A = zeros(funcLength,4);
 		for j=1:funcLength
-			fun = str2func(strtrim(funcName(j,:)));
-			optCM = reshape( fun(dataset) ,[1,4]);
+			funcName = strtrim(funcNames(j,:));
+			[valid,optCM] = loadCalcResult(strcat(dataset,'.mat'),strcat(funcName,'_OPTCM'));
+			if(valid==0 || Recalc~=0)
+				fun = str2func(strtrim(funcNames(j,:)));
+				optCM = reshape( fun(dataset,0.99) ,[1,4]);
+			end
 			A(j,:) = optCM;
 		end
 		ALL = cat(3,ALL,A);
@@ -26,13 +28,13 @@ y=1:4;
 vcount = ceil(sqrt(dataLength));
 hcount = ceil(dataLength/vcount);
 for i=1:dataLength
-	dataset=strtrim(dataName(i,:));
+	dataset=strtrim(dataNames(i,:));
 	subplot(vcount,hcount,i);
 	A = ALL(:,:,i);
 	b=bar(y,A','grouped');title(dataset);
 	ax = b.Parent;
 	ax.XTickLabel = {'tp','fp','fn','tn'};
-	legend(funcName);
+	legend(funcNames);
 end
 if isfield(s,'ALL')==0
 	save ALL;

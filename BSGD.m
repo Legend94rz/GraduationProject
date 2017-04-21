@@ -1,5 +1,5 @@
-dataset = 'a7a';
-%function [OptCM] = BSGD(dataset)
+%dataset = 'a7a';
+function [BSGD_OPTCM] = BSGD(dataset,Epsilon)
 fprintf('*********BSGD Begin*********\n');
 [label,train] = readdata(dataset,'train');
 N=size(train,1);train = [train,ones(N,1)];
@@ -9,7 +9,7 @@ N=size(train,1);train = [train,ones(N,1)];
 M=size(test,1);test = [test,ones(M,1)];
 [M,~] = size(test);
 
-OptCM = zeros(2,2);
+BSGD_OPTCM = zeros(2,2);
 maxCorrect=0;
 %Pegasos learning rate : eta = 1/(lambda*t)
 hash = java.util.Hashtable;
@@ -37,7 +37,6 @@ for it=B+1:N
 		alpha(p) = beta_*t/it;
 	end
 end
-correct=0;
 CM=zeros(2,2);
 PositiveSample = sum(L==1);
 NegtiveSample = sum(L==-1);
@@ -45,18 +44,20 @@ for t = 1:M
 	xt = test(t,:);yt=L(t);
 	ey = sign( kernel(xt,train(I,:),hash.get(dataset))*alpha );
 	CM(int8(-1==yt)+1,int8(-1==ey)+1) = CM(int8(-1==yt)+1,int8(-1==ey)+1)+1;
-	if(ey==yt)
-		correct=correct+1;
-	end
-	if(correct>maxCorrect && correct~=NegtiveSample && correct ~=PositiveSample)
-		maxCorrect = correct;
-		OptCM = CM;
+	if(CM(1,1)+CM(2,2)>maxCorrect && CM(2,2)<=Epsilon*NegtiveSample && CM(1,1) <=Epsilon*PositiveSample)
+		maxCorrect = CM(1,1)+CM(2,2);
+		BSGD_OPTCM = CM;
 	end
 end
-fprintf('Test. %d/%d\n',correct,M);
+fprintf('Test. %d/%d\n',CM(1,1)+CM(2,2),M);
 fprintf(' tp:%.4f, fn:%.4f, fp:%.4f, tn:%.4f\n',CM(1,1)/PositiveSample,CM(1,2)/PositiveSample,CM(2,1)/NegtiveSample,CM(2,2)/NegtiveSample);
 end
-OptCM(1,:)=OptCM(1,:)./sum(L==1);
-OptCM(2,:)=OptCM(2,:)./sum(L==-1);
+BSGD_OPTCM(1,:)=BSGD_OPTCM(1,:)./sum(L==1);
+BSGD_OPTCM(2,:)=BSGD_OPTCM(2,:)./sum(L==-1);
+if(exist(strcat(dataset,'.mat'),'file'))
+	save(strcat(dataset,'.mat'),'BSGD_OPTCM','-append');
+else
+	save(strcat(dataset,'.mat'),'BSGD_OPTCM');
+end
 fprintf('*********BSGD End*********\n');
-%end
+end

@@ -1,4 +1,4 @@
-function [OptCM] =CW(dataset)
+function [CW_OPTCM] =CW(dataset,Epsilon)
 fprintf('*********CW Begin*********\n');
 [label,train] = readdata(dataset,'train');
 N=size(train,1);train = [train,ones(N,1)];
@@ -10,11 +10,11 @@ M=size(test,1);test = [test,ones(M,1)];
 
 a = 0.05;
 
-OptCM = zeros(2,2);
+CW_OPTCM = zeros(2,2);
 maxCorrect=0;
 
 %问题：Sigma会出现负数，应该是数据问题。试试把数据缩放到[0,1] <已修正>
-for yita = 0.5:0.05:0.95
+for yita = 0.7:0.05:0.95
 	correct = 0;CM = zeros(2,2);
 	fprintf('======yita: %f==========\n',yita);
 	phi = norminv(yita,0,1);
@@ -42,24 +42,28 @@ for yita = 0.5:0.05:0.95
 	fprintf(' tp:%.4f, fn:%.4f, fp:%.4f, tn:%.4f\n',CM(1,1)/sum(label==1),CM(1,2)/sum(label==1),CM(2,1)/sum(label==-1),CM(2,2)/sum(label==-1) );
 
 	correct = 0;CM = zeros(2,2);
+	PositiveSample = sum(L==1);
+	NegtiveSample = sum(L==-1);
 	for t=1:M
 		xt = test(t,:);
 		yt = L(t);
 		w = mvnrnd(mu,Sigma)';
 		ey = sign(xt*w);
 		CM(int8(-1==yt)+1,int8(-1==ey)+1) = CM(int8(-1==yt)+1,int8(-1==ey)+1)+1;
-		if(ey==yt)
-			correct=correct+1;
-		end
-		if(correct>maxCorrect)
-			maxCorrect = correct;
-			OptCM = CM;
+		if(CM(1,1)+CM(2,2)>maxCorrect && CM(2,2)<=Epsilon*NegtiveSample && CM(1,1) <=Epsilon*PositiveSample)
+			maxCorrect = CM(1,1)+CM(2,2);
+			CW_OPTCM = CM;
 		end
 	end
-	fprintf('Test. %d/%d\n',correct,M);
-	fprintf(' tp:%.4f, fn:%.4f, fp:%.4f, tn:%.4f\n',CM(1,1)/sum(L==1),CM(1,2)/sum(L==1),CM(2,1)/sum(L==-1),CM(2,2)/sum(L==-1) );
+	fprintf('Test. %d/%d\n', CM(1,1)+CM(2,2),M);
+	fprintf(' tp:%.4f, fn:%.4f, fp:%.4f, tn:%.4f\n',CM(1,1)/PositiveSample,CM(1,2)/PositiveSample,CM(2,1)/NegtiveSample,CM(2,2)/NegtiveSample);
 end
-OptCM(1,:)=OptCM(1,:)./sum(L==1);
-OptCM(2,:)=OptCM(2,:)./sum(L==-1);
+CW_OPTCM(1,:)=CW_OPTCM(1,:)./sum(L==1);
+CW_OPTCM(2,:)=CW_OPTCM(2,:)./sum(L==-1);
+if(exist(strcat(dataset,'.mat'),'file'))
+	save(strcat(dataset,'.mat'),'CW_OPTCM','-append');
+else
+	save(strcat(dataset,'.mat'),'CW_OPTCM');
+end
 fprintf('*********CW End*********\n');
 end
