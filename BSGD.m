@@ -10,6 +10,7 @@ M=size(test,1);test = [test,ones(M,1)];
 [M,~] = size(test);
 
 BSGD_OPTCM = zeros(2,2);
+BSGD_history = [];
 maxCorrect=0;
 %Pegasos learning rate : eta = 1/(lambda*t)
 hash = java.util.Hashtable;
@@ -47,17 +48,20 @@ for t = 1:M
 	if(CM(1,1)+CM(2,2)>maxCorrect && CM(2,2)<=Epsilon*NegtiveSample && CM(1,1) <=Epsilon*PositiveSample)
 		maxCorrect = CM(1,1)+CM(2,2);
 		BSGD_OPTCM = CM;
-	end
+	end 
 end
+BSGD_history = cat(1,BSGD_history,reshape(CM,[1,4]));
 fprintf('Test. %d/%d\n',CM(1,1)+CM(2,2),M);
 fprintf(' tp:%.4f, fn:%.4f, fp:%.4f, tn:%.4f\n',CM(1,1)/PositiveSample,CM(1,2)/PositiveSample,CM(2,1)/NegtiveSample,CM(2,2)/NegtiveSample);
 end
 BSGD_OPTCM(1,:)=BSGD_OPTCM(1,:)./sum(L==1);
 BSGD_OPTCM(2,:)=BSGD_OPTCM(2,:)./sum(L==-1);
-if(exist(strcat(dataset,'.mat'),'file'))
-	save(strcat(dataset,'.mat'),'BSGD_OPTCM','-append');
+filename=strcat(dataset,'.mat');
+if(exist(filename,'file'))
+	save(filename,'BSGD_OPTCM','-append');
 else
-	save(strcat(dataset,'.mat'),'BSGD_OPTCM');
+	save(filename,'BSGD_OPTCM');
 end
+save(filename,'BSGD_history','-append');
 fprintf('*********BSGD End*********\n');
 end

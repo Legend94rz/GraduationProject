@@ -15,6 +15,7 @@ W = zeros(d,k+1);
 count = zeros(1,k);
 P = zeros(k,d);
 LOL_OPTCM = zeros(2,2);
+LOL_history = [];
 maxCorrect=0;
 for t=1:N
 	xt = train(t,:);
@@ -57,14 +58,17 @@ for t = 1:M
 		LOL_OPTCM = CM;
 	end
 end
+LOL_history = cat(1,LOL_history,reshape(CM,[1,4]));
 fprintf('Test. %d/%d\n', CM(1,1)+CM(2,2),M);
 fprintf(' tp:%.4f, fn:%.4f, fp:%.4f, tn:%.4f\n',CM(1,1)/PositiveSample,CM(1,2)/PositiveSample,CM(2,1)/NegtiveSample,CM(2,2)/NegtiveSample);
 LOL_OPTCM(1,:)=LOL_OPTCM(1,:)./sum(L==1);
 LOL_OPTCM(2,:)=LOL_OPTCM(2,:)./sum(L==-1);
-if(exist(strcat(dataset,'.mat'),'file'))
-	save(strcat(dataset,'.mat'),'LOL_OPTCM','-append');
+filename=strcat(dataset,'.mat');
+if(exist(filename,'file'))
+	save(filename,'LOL_OPTCM','-append');
 else
-	save(strcat(dataset,'.mat'),'LOL_OPTCM');
+	save(filename,'LOL_OPTCM');
 end
+save(filename,'LOL_history','-append');
 fprintf('*********LOL End*********\n');
 end

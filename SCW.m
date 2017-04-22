@@ -11,6 +11,7 @@ M=size(test,1);test = [test,ones(M,1)];
 eta = 0.95;
 
 SCW_OPTCM = zeros(2,2);
+SCW_history=[];
 maxCorrect=0;
 
 for c=-4:4
@@ -54,15 +55,18 @@ for t = 1:M
 		SCW_OPTCM = CM;
 	end
 end
+SCW_history = cat(1,SCW_history,reshape(CM,[1,4]));
 fprintf('Test. %d/%d\n',CM(1,1)+CM(2,2),M);
 fprintf(' tp:%.4f, fn:%.4f, fp:%.4f, tn:%.4f\n',CM(1,1)/PositiveSample,CM(1,2)/PositiveSample,CM(2,1)/NegtiveSample,CM(2,2)/NegtiveSample);
 end
 SCW_OPTCM(1,:)=SCW_OPTCM(1,:)./sum(L==1);
 SCW_OPTCM(2,:)=SCW_OPTCM(2,:)./sum(L==-1);
-if(exist(strcat(dataset,'.mat'),'file'))
-	save(strcat(dataset,'.mat'),'SCW_OPTCM','-append');
+filename=strcat(dataset,'.mat');
+if(exist(filename,'file'))
+	save(filename,'SCW_OPTCM','-append');
 else
-	save(strcat(dataset,'.mat'),'SCW_OPTCM');
+	save(filename,'SCW_OPTCM');
 end
+save(filename,'SCW_history','-append');
 fprintf('*********SCW End*********\n');
 end

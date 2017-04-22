@@ -5,7 +5,7 @@ function [ valid , OptCM ] = loadCalcResult( dataset,algorithmName )
 	end
 	s=load(dataset,algorithmName);
 	if(isfield(s,algorithmName))
-		valid=1;OptCM=reshape(getfield(s,algorithmName),[1,4]);
+		valid=1;OptCM=reshape(getfield(s,algorithmName),[1,4]); %#ok<GFLD>
 	else
 		valid=0;OptCM=[];
 	end

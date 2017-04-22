@@ -11,6 +11,7 @@ M=size(test,1);test = [test,ones(M,1)];
 a = 0.05;
 
 CW_OPTCM = zeros(2,2);
+CW_history = [];
 maxCorrect=0;
 
 %问题：Sigma会出现负数，应该是数据问题。试试把数据缩放到[0,1] <已修正>
@@ -41,7 +42,7 @@ for yita = 0.7:0.05:0.95
 	fprintf('Train. %d/%d\n',correct,N);
 	fprintf(' tp:%.4f, fn:%.4f, fp:%.4f, tn:%.4f\n',CM(1,1)/sum(label==1),CM(1,2)/sum(label==1),CM(2,1)/sum(label==-1),CM(2,2)/sum(label==-1) );
 
-	correct = 0;CM = zeros(2,2);
+	CM = zeros(2,2);
 	PositiveSample = sum(L==1);
 	NegtiveSample = sum(L==-1);
 	for t=1:M
@@ -55,15 +56,18 @@ for yita = 0.7:0.05:0.95
 			CW_OPTCM = CM;
 		end
 	end
+	CW_history = cat(1,CW_history,reshape(CM,[1,4]));
 	fprintf('Test. %d/%d\n', CM(1,1)+CM(2,2),M);
 	fprintf(' tp:%.4f, fn:%.4f, fp:%.4f, tn:%.4f\n',CM(1,1)/PositiveSample,CM(1,2)/PositiveSample,CM(2,1)/NegtiveSample,CM(2,2)/NegtiveSample);
 end
 CW_OPTCM(1,:)=CW_OPTCM(1,:)./sum(L==1);
 CW_OPTCM(2,:)=CW_OPTCM(2,:)./sum(L==-1);
-if(exist(strcat(dataset,'.mat'),'file'))
-	save(strcat(dataset,'.mat'),'CW_OPTCM','-append');
+filename=strcat(dataset,'.mat');
+if(exist(filename,'file'))
+	save(filename,'CW_OPTCM','-append');
 else
-	save(strcat(dataset,'.mat'),'CW_OPTCM');
+	save(filename,'CW_OPTCM');
 end
+save(filename,'CW_history','-append');
 fprintf('*********CW End*********\n');
 end

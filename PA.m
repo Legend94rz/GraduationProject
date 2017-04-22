@@ -9,6 +9,7 @@ M=size(test,1);test = [test,ones(M,1)];
 [M,~] = size(test);
 
 PA_OPTCM = zeros(2,2);
+PA_history = [];
 maxCorrect=0;
 
 for C=[0.0001,0.001,0.01,0.1,1,10,100,1000,10000]
@@ -49,15 +50,18 @@ for t=1:M
 		PA_OPTCM = CM;
 	end
 end
+PA_history = cat(1,PA_history,reshape(CM,[1,4]));
 fprintf('Test. %d/%d\n', CM(1,1)+CM(2,2),M);
 fprintf(' tp:%.4f, fn:%.4f, fp:%.4f, tn:%.4f\n',CM(1,1)/PositiveSample,CM(1,2)/PositiveSample,CM(2,1)/NegtiveSample,CM(2,2)/NegtiveSample);
 end
 PA_OPTCM(1,:)=PA_OPTCM(1,:)./sum(L==1);
 PA_OPTCM(2,:)=PA_OPTCM(2,:)./sum(L==-1);
-if(exist(strcat(dataset,'.mat'),'file'))
-	save(strcat(dataset,'.mat'),'PA_OPTCM','-append');
+filename=strcat(dataset,'.mat');
+if(exist(filename,'file'))
+	save(filename,'PA_OPTCM','-append');
 else
-	save(strcat(dataset,'.mat'),'PA_OPTCM');
+	save(filename,'PA_OPTCM');
 end
+save(filename,'PA_history','-append');
 fprintf('*********PA End*********\n');
 end

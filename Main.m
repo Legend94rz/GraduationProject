@@ -1,27 +1,29 @@
-Recalc=0;
+keySet = {'svmguide1','a7a','w7a','cbcl','ijcnn1'};
+valSet = {{'PA','CW','SCW','LOL','BSGD','Pegasos'},	...
+		  {'PA','CW','SCW','LOL','BSGD','Pegasos'},...
+		  {'PA','CW','SCW','LOL','BSGD','Pegasos'},...
+		  {'PA','CW','SCW','LOL','BSGD','Pegasos'},...
+		  {'PA','CW','SCW','LOL','BSGD','Pegasos'}};
+ReCals = containers.Map(keySet,valSet);
+
 dataNames=char({'svmguide1','a7a','w7a','cbcl','ijcnn1'});
 funcNames=char({'PA','CW','SCW','LOL','BSGD','Pegasos'});
 [dataLength,~] = size(dataNames);
 [funcLength,~] = size(funcNames);
-s = load('ALL.mat','ALL');
-if isfield(s,'ALL')==0
-	ALL = [];
-	for i=1:dataLength
-		dataset=strtrim(dataNames(i,:));
-		A = zeros(funcLength,4);
-		for j=1:funcLength
-			funcName = strtrim(funcNames(j,:));
-			[valid,optCM] = loadCalcResult(strcat(dataset,'.mat'),strcat(funcName,'_OPTCM'));
-			if(valid==0 || Recalc~=0)
-				fun = str2func(strtrim(funcNames(j,:)));
-				optCM = reshape( fun(dataset,0.99) ,[1,4]);
-			end
-			A(j,:) = optCM;
+ALL=[];
+for i=1:dataLength
+	dataset=strtrim(dataNames(i,:));
+	A = zeros(funcLength,4);
+	for j=1:funcLength
+		funcName = strtrim(funcNames(j,:));
+		[valid,optCM] = loadCalcResult(strcat(dataset,'.mat'),strcat(funcName,'_OPTCM'));
+		if(valid==0 || (ReCals.isKey(dataset) && sum( ismember(ReCals(dataset),funcName)))>0 )
+			fun = str2func(strtrim(funcNames(j,:)));
+			optCM = reshape( fun(dataset,0.98) ,[1,4]);
 		end
-		ALL = cat(3,ALL,A);
+		A(j,:) = optCM;
 	end
-else
-	ALL=s.ALL;
+	ALL = cat(3,ALL,A);
 end
 figure;
 y=1:4;
@@ -36,6 +38,4 @@ for i=1:dataLength
 	ax.XTickLabel = {'tp','fp','fn','tn'};
 	legend(funcNames);
 end
-if isfield(s,'ALL')==0
-	save ALL;
-end
+save('ALL.mat','ALL');

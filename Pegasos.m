@@ -1,5 +1,5 @@
 % Mini-Batch Iterations without Projection
-function [PEGASOS_OPTCM]=Pegasos(dataset,Epsilon)
+function [Pegasos_OPTCM]=Pegasos(dataset,Epsilon)
 fprintf('*********Pegasos Begin*********\n');
 [label,train] = readdata(dataset,'train');
 N = size(train,1);train = [train,ones(N,1)];
@@ -8,7 +8,8 @@ N = size(train,1);train = [train,ones(N,1)];
 [L,test] = readdata(dataset,'test');
 M=size(test,1);test = [test,ones(M,1)];
 
-PEGASOS_OPTCM = zeros(2,2);
+Pegasos_OPTCM = zeros(2,2);
+Pegasos_history = [];
 maxCorrect=0;
 
 T = N;		% the number of iteration
@@ -36,18 +37,21 @@ for t = 1:M
 	CM(int8(-1==yt)+1,int8(-1==ey)+1) = CM(int8(-1==yt)+1,int8(-1==ey)+1)+1;
 	if(CM(1,1)+CM(2,2)>maxCorrect && CM(2,2)<=Epsilon*NegtiveSample && CM(1,1) <=Epsilon*PositiveSample)
 		maxCorrect = CM(1,1)+CM(2,2);
-		PEGASOS_OPTCM = CM;
+		Pegasos_OPTCM = CM;
 	end
 end
+Pegasos_history = cat(1,Pegasos_history,reshape(CM,[1,4]));
 fprintf('Test. %d/%d\n',CM(1,1)+CM(2,2),M);
 fprintf(' tp:%.4f, fn:%.4f, fp:%.4f, tn:%.4f\n',CM(1,1)/PositiveSample,CM(1,2)/PositiveSample,CM(2,1)/NegtiveSample,CM(2,2)/NegtiveSample);
 end
-PEGASOS_OPTCM(1,:)=PEGASOS_OPTCM(1,:)./sum(L==1);
-PEGASOS_OPTCM(2,:)=PEGASOS_OPTCM(2,:)./sum(L==-1);
-if(exist(strcat(dataset,'.mat'),'file'))
-	save(strcat(dataset,'.mat'),'PEGASOS_OPTCM','-append');
+Pegasos_OPTCM(1,:)=Pegasos_OPTCM(1,:)./sum(L==1);
+Pegasos_OPTCM(2,:)=Pegasos_OPTCM(2,:)./sum(L==-1);
+filename=strcat(dataset,'.mat');
+if(exist(filename,'file'))
+	save(filename,'Pegasos_OPTCM','-append');
 else
-	save(strcat(dataset,'.mat'),'PEGASOS_OPTCM');
+	save(filename,'Pegasos_OPTCM');
 end
+save(filename,'Pegasos_history','-append');
 fprintf('*********Pegasos End*********\n');
 end
