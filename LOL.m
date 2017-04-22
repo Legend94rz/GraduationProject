@@ -1,4 +1,4 @@
-function [LOL_OPTCM] = LOL(dataset,Epsilon)
+function LOL(dataset)
 fprintf('*********LOL Begin*********\n');
 
 [label,train] = readdata(dataset,'train');
@@ -9,14 +9,16 @@ N=size(train,1);train = [train,ones(N,1)];
 M=size(test,1);test = [test,ones(M,1)];
 [M,~] = size(test);
 
-C=1;k=60;lambda=1;
+k=60;lambda=1;
 
 W = zeros(d,k+1);
 count = zeros(1,k);
 P = zeros(k,d);
-LOL_OPTCM = zeros(2,2);
+
 LOL_history = [];
-maxCorrect=0;
+for Ci=0
+C=10^Ci;
+fprintf('C: %d\n',C);
 for t=1:N
 	xt = train(t,:);
 	i=t;
@@ -30,15 +32,14 @@ for t=1:N
 		count(i) = count(i)+1;
 	end
 	Xt = zeros(k+1,d);
-	Xt(1,:) = xt;
+	Xt(1,:) = xt./sqrt(lambda);
 	Xt(i,:) = xt;
 	result = Xt*W;
+	yt = label(t);
+	loss = max(0,1-yt*sum(result(:)) );
 	tmp = Xt.^2;
-	yt = sign( sum(result(:)) );
-	y = label(t);
-	loss = max(0,1-y*sum(result(:)) );
 	yita = min(C,loss/sum(tmp(:)));
-	W = W + yita * y * Xt';
+	W = W + yita * yt * Xt';
 end
 CM = zeros(2,2);
 PositiveSample = sum(L==1);
@@ -50,25 +51,19 @@ for t = 1:M
 	[~,i] = min( sum( repmat(xt,k,1) ,2 ) );
 	Xt(i,:) = xt;
 	result = Xt*W;
-	ey = sign( sum( result(:) ) );
+	ey=sign( sum( result(:) ) );
 	yt=L(t);
 	CM(int8(-1==yt)+1,int8(-1==ey)+1) = CM(int8(-1==yt)+1,int8(-1==ey)+1)+1;
-	if(CM(1,1)+CM(2,2)>maxCorrect && CM(2,2)<=Epsilon*NegtiveSample && CM(1,1) <=Epsilon*PositiveSample)
-		maxCorrect = CM(1,1)+CM(2,2);
-		LOL_OPTCM = CM;
-	end
 end
 LOL_history = cat(1,LOL_history,reshape(CM,[1,4]));
 fprintf('Test. %d/%d\n', CM(1,1)+CM(2,2),M);
 fprintf(' tp:%.4f, fn:%.4f, fp:%.4f, tn:%.4f\n',CM(1,1)/PositiveSample,CM(1,2)/PositiveSample,CM(2,1)/NegtiveSample,CM(2,2)/NegtiveSample);
-LOL_OPTCM(1,:)=LOL_OPTCM(1,:)./sum(L==1);
-LOL_OPTCM(2,:)=LOL_OPTCM(2,:)./sum(L==-1);
 filename=strcat(dataset,'.mat');
 if(exist(filename,'file'))
-	save(filename,'LOL_OPTCM','-append');
+	save(filename,'LOL_history','-append');
 else
-	save(filename,'LOL_OPTCM');
+	save(filename,'LOL_history');
 end
-save(filename,'LOL_history','-append');
+end
 fprintf('*********LOL End*********\n');
 end

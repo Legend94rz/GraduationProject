@@ -1,4 +1,4 @@
-function [SCW_OPTCM] = SCW(dataset,Epsilon)
+function SCW(dataset)
 fprintf('*********SCW Begin*********\n');
 [label,train] = readdata(dataset,'train');
 N=size(train,1);train = [train,ones(N,1)];
@@ -10,9 +10,7 @@ M=size(test,1);test = [test,ones(M,1)];
 
 eta = 0.95;
 
-SCW_OPTCM = zeros(2,2);
 SCW_history=[];
-maxCorrect=0;
 
 for c=-4:4
 C=10^c;
@@ -50,23 +48,16 @@ for t = 1:M
 	w = mvnrnd(mu,Sigma)';
 	ey = sign(xt*w);
 	CM(int8(-1==yt)+1,int8(-1==ey)+1) = CM(int8(-1==yt)+1,int8(-1==ey)+1)+1;
-	if(CM(1,1)+CM(2,2)>maxCorrect && CM(2,2)<=Epsilon*NegtiveSample && CM(1,1) <=Epsilon*PositiveSample)
-		maxCorrect = CM(1,1)+CM(2,2);
-		SCW_OPTCM = CM;
-	end
 end
 SCW_history = cat(1,SCW_history,reshape(CM,[1,4]));
 fprintf('Test. %d/%d\n',CM(1,1)+CM(2,2),M);
 fprintf(' tp:%.4f, fn:%.4f, fp:%.4f, tn:%.4f\n',CM(1,1)/PositiveSample,CM(1,2)/PositiveSample,CM(2,1)/NegtiveSample,CM(2,2)/NegtiveSample);
 end
-SCW_OPTCM(1,:)=SCW_OPTCM(1,:)./sum(L==1);
-SCW_OPTCM(2,:)=SCW_OPTCM(2,:)./sum(L==-1);
 filename=strcat(dataset,'.mat');
 if(exist(filename,'file'))
-	save(filename,'SCW_OPTCM','-append');
+	save(filename,'SCW_history','-append');
 else
-	save(filename,'SCW_OPTCM');
+	save(filename,'SCW_history');
 end
-save(filename,'SCW_history','-append');
 fprintf('*********SCW End*********\n');
 end
