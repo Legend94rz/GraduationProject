@@ -7,7 +7,7 @@ valSet = {{},...
 ReCals = containers.Map(keySet,valSet);
 
 dataNames=char({'svmguide1','a7a','w7a','cbcl','ijcnn1'});
-funcNames=char({'PA','CW','SCW','LOL','BSGD','Pegasos'});
+funcNames=char({'PA','CW','SCW','LOL','BSGD','Pegasos','Pegasos(single)'});
 [dataLength,~] = size(dataNames);
 [funcLength,~] = size(funcNames);
 ALL=[];
@@ -16,12 +16,16 @@ for i=1:dataLength
 	A = zeros(funcLength,5);
 	for j=1:funcLength
 		funcName = strtrim(funcNames(j,:));
-		[valid,~] = SelectOpt(dataset,funcName,-1);
-		if(valid==0 || (ReCals.isKey(dataset) && sum( ismember(ReCals(dataset),funcName)))>0 )
-			fun = str2func(strtrim(funcNames(j,:)));
-			fun(dataset);
+		if(~strcmp(funcName,'Pegasos(single)'))
+			[valid,~] = readOpt(dataset,funcName);
+			if(valid==0 || (ReCals.isKey(dataset) && sum( ismember(ReCals(dataset),funcName)))>0 )
+				fun = str2func(strtrim(funcNames(j,:)));
+				fun(dataset);
+			end
+		else
+			funcName='Pegasos_single';		%ÎªÁË±ÜÃâÍ¼ÀıÏÔÊ¾´íÎó
 		end
-		[valid,optCM] = SelectOpt(dataset,funcName,0.3);
+		[valid,optCM] = readOpt(dataset,funcName);
 		A(j,:) = optCM;
 	end
 	ALL = cat(3,ALL,A);
