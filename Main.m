@@ -30,10 +30,11 @@ for i=1:dataLength
 	end
 	ALL = cat(3,ALL,A);
 end
-figure;
 y=1:5;
 vcount = ceil(sqrt(dataLength));
 hcount = ceil(dataLength/vcount);
+%{
+figure;
 for i=1:dataLength
 	dataset=strtrim(dataNames(i,:));
 	subplot(vcount,hcount,i);
@@ -45,3 +46,39 @@ for i=1:dataLength
 end
 legend(funcNames);
 save('ALL.mat','ALL');
+%}
+figure;
+for i=1:dataLength
+	dataset=strtrim(dataNames(i,:));
+	subplot(vcount,hcount,i);
+	A = ALL(:,:,i);
+	[TP,Index] = sort( A(:,1));
+	b=barh(TP);title(dataset);
+	ax = b.Parent;
+	ax.YTickLabel = funcNames(Index,:);
+	ax.XTick=0:0.2:1;
+end
+
+figure;
+for i=1:dataLength
+	dataset=strtrim(dataNames(i,:));
+	subplot(vcount,hcount,i);
+	A = ALL(:,:,i);
+	[TP,Index] = sort( A(:,4));
+	b=barh(TP);title(dataset);
+	ax = b.Parent;
+	ax.YTickLabel = funcNames(Index,:);
+	ax.XTick=0:0.2:1;
+end
+
+figure;
+for i=1:dataLength
+	dataset=strtrim(dataNames(i,:));
+	subplot(vcount,hcount,i);
+	A = ALL(:,:,i);
+	[TP,Index] = sort( A(:,5));
+	b=barh(TP);title(dataset);
+	ax = b.Parent;
+	ax.YTickLabel = funcNames(Index,:);
+	ax.XTick=0:0.2:1;
+end
