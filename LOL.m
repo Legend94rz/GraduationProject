@@ -1,5 +1,6 @@
 function LOL(dataset)
 	fprintf('*********LOL Begin*********\n');
+	%{
 	load(strcat('data\',dataset,'.mat'));
 	N=size(train,1);train = [train,ones(N,1)];
 	[N,d] = size(train);
@@ -7,8 +8,16 @@ function LOL(dataset)
 	[L,test]=readdata(dataset,'test');
 	M=size(test,1);test = [test,ones(M,1)];
 	[M,~] = size(test);
+	%}
+	load(strcat('data\',dataset,'.mat'));
+	N = size(Data,1);Data=[Data,ones(N,1)];d=size(Data,2);
+	p = ceil(N*0.8);
+	train = Data(1:p,:);	label = Label(1:p,:);
+	test = Data(p+1:end,:);	L = Label(p+1:end,:);
+	fold=5;
+	
 	LOL_history = [];W_history=[];count_history=[];P_history=[];
-	k=60;lambda=1;nperpart =N/fold;
+	k=100;lambda=1;nperpart = fix(p/fold);
 	for C=[1]
 		fprintf('======C: %d==========\n',C);
 		rule = (1:fold)';

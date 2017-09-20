@@ -1,5 +1,6 @@
 function PA(dataset)
 	fprintf('*********PA Begin*********\n');
+	%{
 	[L,test] = readdata(dataset,'test');
 	M=size(test,1);test = [test,ones(M,1)];
 	[M,~] = size(test);
@@ -7,7 +8,15 @@ function PA(dataset)
 	load(strcat('data\',dataset,'.mat'));
 	N=size(train,1);train = [train,ones(N,1)];
 	[N,d] = size(train);
-	PA_history = [];w_history=[];nperpart =N/fold;
+	%}
+	load(strcat('data\',dataset,'.mat'));
+	N = size(Data,1);Data=[Data,ones(N,1)];d=size(Data,2);
+	p = ceil(N*0.8);
+	train = Data(1:p,:);	label = Label(1:p,:);
+	test = Data(p+1:end,:);	L = Label(p+1:end,:);
+	fold=5;
+	
+	PA_history = [];w_history=[];nperpart = fix(p/fold);
 	for C=[0.001,0.01,0.1,1,10]
 		fprintf('======C: %d==========\n',C);
 		rule = (1:fold)';

@@ -29,7 +29,7 @@ end
 
 if(j==0)
 	j=randi([1,N]);
-	fprintf('warning:random pick a result. dataset: %s, funcName: %s, j: %d\n',dataset,funcName,j);
+	fprintf('warning:random pick a result. j: %d\n',j);
 end
 OptHistory = history(j,:);
 valid=1;
