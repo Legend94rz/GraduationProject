@@ -17,7 +17,7 @@ function LOL(dataset)
 	fold=5;
 	
 	LOL_history = [];W_history=[];count_history=[];P_history=[];
-	k=100;lambda=1;nperpart = fix(p/fold);
+	k=200;lambda=1;nperpart = fix(p/fold);
 	for C=[1]
 		fprintf('======C: %d==========\n',C);
 		rule = (1:fold)';

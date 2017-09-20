@@ -2,8 +2,11 @@ function BSGD(dataset)
 	global hash ds;
 	hash = java.util.Hashtable;
 	hash.put('svmguide1',0.01);hash.put('ijcnn1',0.05);hash.put('cbcl',5);hash.put('a7a',0.1);hash.put('w7a',0.2);
+	hash.put('node',1);hash.put('line',0.01);
 	ds=dataset;
+	
 	fprintf('*********BSGD Begin*********\n');
+	%{
 	load(strcat('data\',dataset,'.mat'));
 	N=size(train,1);train = [train,ones(N,1)];
 	[N,d] = size(train);
@@ -11,9 +14,18 @@ function BSGD(dataset)
 	[L,test] = readdata(dataset,'test');
 	M=size(test,1);test = [test,ones(M,1)];
 	[M,~] = size(test);
+	%}
+	
+	load(strcat('data\',dataset,'.mat'));
+	N = size(Data,1);Data=[Data,ones(N,1)];d=size(Data,2);
+	p = ceil(N*0.8);
+	train = Data(1:p,:);	label = Label(1:p,:);
+	test = Data(p+1:end,:);	L = Label(p+1:end,:);
+	fold=5;
 	
 	BSGD_history = [];SV_history=[];alpha_history=[];
-	nperpart =N/fold;
+	nperpart =fix(p/fold);
+	
 	B=ceil(d*1.4);
 	for lambda=[0.0001,0.001,0.01,0.1,1,10,100,1000]
 		fprintf('lambda: %d, Sigma: %d\n',lambda,hash.get(dataset));
